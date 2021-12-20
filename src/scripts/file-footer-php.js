@@ -1,0 +1,1 @@
+export const footere = `<?php echo _include("@backend/views/footer.php"); ?>`

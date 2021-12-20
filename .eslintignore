@@ -1,0 +1,5 @@
+/dist/
+/tests/unit/coverage/
+/public/
+/src/assets/lib/hidpi-canvas.js
+/src/assets/lib/huxing.js

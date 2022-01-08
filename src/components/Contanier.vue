@@ -20,8 +20,9 @@
           @node-click="handleNodeClick"
           :highlight-current="highlightCurrent"
           :default-expand-all="Boolean(defaultExpandAll)"
+          class="tree"
         >
-          <span slot-scope="{ node, data }" class="custom-tree-node">
+          <span slot-scope="{ node, data }" class="custom-tree-node treeNode">
             <span>
               <i v-if="data.children !== undefined" class="el-icon-folder-opened" /> <i v-else class="el-icon-folder" />
               {{ node.label }}
@@ -40,10 +41,17 @@
         <div class="main-right-table">
           <el-table
             :data="tableData"
-            style="width: 100%; font-size: 14px"
+            style="
+              width: 100%;
+              font-size: 14px;
+              color: #222222;
+              font-family: PingFang SC;
+              font-style: normal;
+              font-weight: normal;
+            "
             :row-style="{ height: '80px' }"
             :cell-style="{ padding: '0px', textAlign: 'center' }"
-            :header-cell-style="{ textAlign: 'center' }"
+            :header-cell-style="{ textAlign: 'center', background: '#FBFBFB', fontSize: '14px' }"
           >
             <el-table-column fixed label="序号" width="60" type="index">
               <template slot-scope="scope">
@@ -57,21 +65,32 @@
             <el-table-column prop="createTime" label="创建时间"> </el-table-column>
             <el-table-column fixed="right" label="操作">
               <template slot-scope="scope">
-                <el-button @click="editTenantClick('edit', scope.row)" type="text" size="small">编辑</el-button>
+                <el-button @click="editTenantClick('edit', scope.row)" type="text" size="small" class="wordColor"
+                  >编辑</el-button
+                >
                 <i v-html="'\u00a0\u00a0\u00a0\u00a0'"></i>
                 <el-popover placement="right" trigger="click">
                   <el-button
                     size="small"
                     type="text"
                     :disabled="Boolean(enableEmail)"
+                    class="wordColor"
                     @click="sendMailCallback({ tenantId: scope.row.tenantId })"
                     >重发激活邮件</el-button
                   >
-                  <el-button @click="dialogFormVisible = true" type="text" size="small" style="margin-left: 16px"
+
+                  <el-button
+                    @click="dialogFormVisible = true"
+                    type="text"
+                    size="small"
+                    style="margin-left: 16px"
+                    class="wordColor"
                     >关联服务商租户</el-button
                   >
 
-                  <el-button slot="reference" type="text" size="small" @click="moreClick(scope.row)">更多</el-button>
+                  <el-button slot="reference" type="text" size="small" @click="moreClick(scope.row)" class="wordColor"
+                    >更多</el-button
+                  >
                 </el-popover>
               </template>
             </el-table-column>
@@ -86,6 +105,7 @@
             :page-size="pageSize"
             layout="total, sizes, prev, pager, next, jumper"
             :total="pageTotalCount"
+            background
           >
           </el-pagination>
         </div>
@@ -111,7 +131,7 @@
           />
         </el-drawer>
       </div>
-      <el-dialog :visible.sync="dialogFormVisible" width="90%">
+      <el-dialog :visible.sync="dialogFormVisible" width="90%" :show-close=false>
         <codeConnect
           :currentRow="this.currentRowData"
           :currentRowTenantId="this.currentRowTenantId"
@@ -119,6 +139,7 @@
           :page="this.currentPage"
           :currentAreaName="this.currentAreaName"
           @closeDialogFormVisible="this.closeDialogFormVisible"
+          
         />
       </el-dialog>
     </div>
@@ -319,11 +340,12 @@ export default {
   justify-content: space-between;
   flex-direction: row;
 
-  width: 70%;
+  width: 80%;
   margin: 0 auto;
-  padding: 20px;
+  /* padding: 20px; */
   font-size: 14px;
   background-color: #ffffff;
+  box-shadow: 0px 2px 4px rgba(50, 50, 51, 0.2);
 }
 
 .left {
@@ -331,14 +353,22 @@ export default {
   display: flex;
   flex-direction: column;
   /* padding-right: 60px; */
-  line-height: 100px;
-  border: 1px solid #f1ebeb;
+  line-height: 60px;
+  border-right: 1px solid #f1ebeb;
+  /* box-shadow: inset -1px 0px 0px #E9EBEE; */
   /* padding: 20px; */
 }
 
 .left-header {
   padding: 0px 20px;
-  border-bottom: 1px solid #f1ebeb;
+  /* border-bottom: 1px solid #f1ebeb; */
+  box-shadow: inset 0px -1px 0px #e9ebee;
+}
+
+.header-left {
+  height: 60px;
+  border-radius: 3px;
+  color: #cccccc;
 }
 
 .left-main {
@@ -351,26 +381,40 @@ export default {
   display: flex;
   flex-direction: column;
 
-  border: 1px solid #f1ebeb;
+  /* border: 1px solid #f1ebeb; */
 }
 
 .right-header {
-  height: 100px;
+  height: 60px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  border-bottom: 1px solid #f1ebeb;
+  /* border-bottom: 1px solid #f1ebeb; */
+  box-shadow: inset 0px -1px 0px #e9ebee;
   padding: 0px 20px;
 }
 
 .main-right-title {
-  line-height: 100px;
-  font-size: 18px;
+  line-height: 60px;
+  font-size: 16px;
+  color: #222222 !important;
+  font-family: PingFang SC !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  line-height: 60px;
 }
 
 .main-right-button {
-  height: 50px;
-  margin-top: 25px !important;
+  height: 42px;
+  margin-top: 8px !important;
+  background: #0059de !important;
+  border-radius: 3px !important;
+  color: #ffffff !important;
+  font-size: 14px !important;
+  font-family: PingFang SC !important;
+  font-style: normal !important;
+  font-weight: normal !important;
 }
 
 .right-main {
@@ -395,14 +439,41 @@ export default {
   height: 100%;
 }
 
+.wordColor {
+  font-size: 14px !important;
+  color: #0059de !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-family: PingFang SC !important;
+}
+
+.tree {
+  margin-left: 20px;
+}
+
+.treeNode {
+  color: #222222;
+  font-size: 14px;
+  font-family: PingFang SC;
+  font-style: normal;
+  font-weight: normal;
+}
+
+.treeNode:hover {
+  color: #0059de;
+}
+
 /* 树形结构样式 */
 .el-tree-node:focus > .el-tree-node__content {
-  background-color: #66b1ff87 !important;
+  background-color: rgba(42, 106, 255, 0.1) !important;
+  color: #0059de !important;
 }
 .el-tree-node__content:hover {
-  background-color: #99ccff !important;
+  background-color: rgba(42, 106, 255, 0.05) !important;
+  color: #0059de !important;
 }
 .el-tree--highlight-current .el-tree-node.is-current > .el-tree-node__content {
-  background-color: #66b1ff87 !important;
+  background-color: rgba(42, 106, 255, 0.1) !important;
+  color: #0059de !important;
 }
 </style>

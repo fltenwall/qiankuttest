@@ -13,5 +13,5 @@ const POST = function(url, params){
     .catch(err => {throw new Error(err)});
 };
 
-export {GET, POST};
+export {GET, POST, BASEURL};
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="contanier">
+  <div class="codeConnect">
     <!-- <div class="header">
       <div class="header-icon"></div>
       <h3 class="header-title">{{currentAreaName}}</h3>
@@ -12,16 +12,23 @@
           <span>{{ this.currentRow.tenantName }}(企业代码: {{ this.currentRow.tenantCode }})</span>
         </div>
 
-        <el-button type="primary" @click="addConnect">添加服务商</el-button>
+        <el-button type="primary" @click="addConnect" class="btn">添加服务商</el-button>
       </div>
       <div class="main-table">
         <el-table
           :data="tableData"
           border
-          style="width: 100%"
+          style="
+              width: 100%;
+              font-size: 14px;
+              color: #222222;
+              font-family: PingFang SC;
+              font-style: normal;
+              font-weight: normal;
+            "
           :row-style="{ height: '80px' }"
           :cell-style="{ padding: '0px', textAlign: 'center' }"
-          :header-cell-style="{ textAlign: 'center' }"
+          :header-cell-style="{ textAlign: 'center', background: '#FBFBFB', fontSize: '14px' }"
         >
           <el-table-column fixed label="序号" width="100" type="index">
             <template slot-scope="scope">
@@ -32,9 +39,9 @@
           <el-table-column prop="channelCode" label="租户代码"> </el-table-column>
           <el-table-column label="操作">
             <template slot-scope="scope">
-              <el-button @click="editConnect(scope.row)" type="text" size="small">编辑</el-button>
+              <el-button @click="editConnect(scope.row)" type="text" size="small" class="wordColor">编辑</el-button>
               <i v-html="'\u00a0\u00a0\u00a0\u00a0'"></i>
-              <el-button @click="syncParty(scope.row)" type="text" size="small">同步用户</el-button>
+              <el-button @click="syncParty(scope.row)" type="text" size="small" class="wordColor">同步用户</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -82,7 +89,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="codeConnectDialog = false">取 消</el-button>
-        <el-button type="primary" :disabled="btnDisabled" @click="saveData()">确 定</el-button>
+        <el-button type="primary" :disabled="btnDisabled" @click="saveData()" class="btn">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -275,6 +282,9 @@ export default {
 </script>
 
 <style scoped>
+.codeConnect{
+  width: 100%;
+}
 .header {
   padding: 20px 0;
   /* background-color: lightgrey; */
@@ -314,5 +324,23 @@ export default {
 .el-select,
 .el-input_inner {
   width: 100%;
+}
+
+.btn {
+  background: #0059de !important;
+  border-radius: 3px !important;
+  color: #ffffff !important;
+  font-size: 14px !important;
+  font-family: PingFang SC !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+}
+
+.wordColor {
+  font-size: 14px !important;
+  color: #0059de !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-family: PingFang SC !important;
 }
 </style>

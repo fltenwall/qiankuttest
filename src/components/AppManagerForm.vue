@@ -1,14 +1,15 @@
 <template>
-  <el-form ref="form" :model="form" label-width="120px" class="container" :rules="rules">
+  <el-form ref="form" :model="form" label-width="120px" class="container item" :rules="rules" label-position="left">
     <div class="typeDiv">
-      <span>应用类型</span>
+      <span class="type-name">应用类型</span>
       <span class="type-left">
-        <i class="el-icon-mobile-phone iconClass" ></i>
+        <i class="el-icon-mobile-phone iconClass"></i>
         <span>APP</span>
       </span>
       <span class="type-right">
-        <i class="el-icon-s-platform iconClass" ></i>
-        <span>PC</span>
+        <span class="type-right-building">建设中</span>
+        <i class="el-icon-s-platform iconClass"></i>
+        <span class="type-right-selected">PC站点</span>
       </span>
     </div>
     <!-- 最多6个字符 -->
@@ -18,12 +19,12 @@
     <!-- 不可编辑 -->
     <el-form-item label="应用用户" prop="apply_for">
       <el-radio-group v-model="form.apply_for" :disabled="disabledField.apply_for">
-        <el-radio label="面向企业内部用户"></el-radio>
-        <el-radio label="面向企业供应商与用户"></el-radio>
+        <el-radio label="企业内部用户"></el-radio>
+        <el-radio label="企业供应商客户"></el-radio>
       </el-radio-group>
     </el-form-item>
     <!-- 默认否，不可编辑 -->
-    <el-form-item label="是否客户专属" prop="is_exclusive">
+    <el-form-item label="是否专属" prop="is_exclusive">
       <el-radio-group v-model="form.is_exclusive" :disabled="disabledField.is_exclusive">
         <el-radio label="否"></el-radio>
         <el-radio label="是"></el-radio>
@@ -42,7 +43,7 @@
       <el-upload
         class="avatar-uploader"
         list-type="picture-card"
-        action="https://manager-test.mypaas.com/app/index/upload-app-logo"
+        :action="this.uploadUrl"
         :show-file-list="false"
         :on-success="handleAvatarSuccess"
         :before-upload="beforeAvatarUpload"
@@ -52,7 +53,7 @@
         <img v-if="form.icon_url" :src="form.icon_url" class="avatar" />
         <i v-else class="el-icon-plus"></i>
       </el-upload>
-      <span>尺寸大小：1024*1024 png/jpg/jpeg格式</span>
+      <span class="uploadWords">建议：1024*1024 png格式</span>
     </el-form-item>
     <!-- 必填，支持字母、数字、中划线，且中划线不能放在首尾，不能连续出现，全平台唯一，不可编辑-->
     <el-form-item label="应用编码" prop="app_code">
@@ -71,7 +72,7 @@
         placeholder="请输入包名，例如：com.mingyuanyun.demo"
       ></el-input>
     </el-form-item>
-    <span class="promptWord">ios</span>
+    <span class="promptWord">iOS</span>
     <!-- 必填，反域名格式校验，不可编辑 -->
     <el-form-item label="BundleID" prop="ios_id" class="bundleID">
       <el-input
@@ -94,7 +95,7 @@
       <el-input type="textarea" v-model="form.description" placeholder="请输入应用描述"></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="onSubmit('form')">{{
+      <el-button type="primary" @click="onSubmit('form')" class="btn">{{
         this.newCreateAppLabel === true ? '立即创建' : '保存修改'
       }}</el-button>
       <el-button @click="cancle">取消</el-button>
@@ -104,15 +105,17 @@
 
 <script>
 import { getSingleAppInfo, createApplication, editSingleAppInfo } from '../api/appManagerApi';
+import {BASEURL} from './../api/baseApi';
 import axios from 'axios';
 export default {
   name: 'AppManagerForm',
   props: ['currentEditAppParams', 'createAppLabel'],
   data() {
     return {
+      uploadUrl : `${BASEURL}app/index/upload-app-logo`,
       form: {
         name: '', // 应用名
-        apply_for: '面向企业内部用户', // 适用用户 1：内部 2：外部
+        apply_for: '企业内部用户', // 适用用户 1：内部 2：外部
         is_exclusive: '否', // 是否专属应用 0：否 1：是
         tenant_code: '', // 专属应用租户代码，专属应用时必填
         app_code: '', // 应用编码
@@ -120,7 +123,7 @@ export default {
         ios_id: '', // iOS Bundle ID
         ios_deploy_mod: 'AppStore', // iOS发布模式 1：上架包（默认） 2：企业包
         description: '', // 应用描述
-        type: 'pc', // 应用类型 app(默认) pc
+        type: 'app', // 应用类型 app(默认) pc
         icon_url: '',
         id: '',
       },
@@ -132,9 +135,9 @@ export default {
         apply_for: [{ required: true, message: '请输入应用用户名称', trigger: 'blur' }],
         tenant_code: [{ required: true, message: '请输入租户代码', trigger: 'blur' }],
         app_code: [{ required: true, message: '请输入应用编码', trigger: 'blur' }],
-        is_exclusive: [{ required: true, message: '请选择是否客户专属', trigger: 'change' }],
-        android_id: [{ required: true, message: '输入包名', trigger: 'change' }],
-        ios_id: [{ required: true, message: '请输入BundleID', trigger: 'change' }],
+        is_exclusive: [{ required: true, message: '请选择是否专属', trigger: 'change' }],
+        android_id: [{ required: true, message: '输入包名', trigger: 'blur' }],
+        ios_id: [{ required: true, message: '请输入BundleID', trigger: 'blur' }],
         // ios_deploy_mod: [{ required: true, message: '请选择发布方式', trigger: 'change' }],
         description: [{ max: 200, message: '长度最大为200个字符', trigger: 'blur' }],
       },
@@ -163,12 +166,12 @@ export default {
   },
   watch: {
     currentEditAppParams(newVal) {
+      this.changeDisabledFieldToTrue();
       if (!newVal.type) {
         for (let key in this.form) {
           this.form[key] = '';
         }
-        console.log(666);
-        this.form.apply_for = '面向企业内部用户';
+        this.form.apply_for = '企业内部用户';
         this.form.is_exclusive = '否';
         this.form.ios_deploy_mod = 'AppStore';
 
@@ -177,9 +180,11 @@ export default {
       }
       this.newCurrentEditAppParams = newVal;
       this.initDataHandle();
+      
     },
     createAppLabel(newVal) {
       this.newCreateAppLabel = newVal;
+      console.log(this.form);
     },
   },
   methods: {
@@ -206,6 +211,7 @@ export default {
           // 编辑保存
           await this.editSave();
         }
+        this.dataTypeTransformLabel();
       }
     },
     // 数据初始化处理
@@ -217,38 +223,37 @@ export default {
       const currentAPPInfo = await getSingleAppInfo(this.newCurrentEditAppParams);
       this.form = currentAPPInfo.data.data;
       this.dataTypeTransformLabel();
-      console.log('form', currentAPPInfo);
     },
     // 字段形式转化
     dataTypeTransformLabel() {
       // 应用用户
-      this.form.apply_for = Object.is(this.form.apply_for, '1') ? '面向企业内部用户' : '面向企业供应商与用户';
-      // 是否客户专属
+      this.form.apply_for = Object.is(this.form.apply_for, '1') ? '企业内部用户' : '企业供应商客户';
+      // 是否专属
       this.form.is_exclusive = Object.is(this.form.is_exclusive, '0') ? '否' : '是';
       // 发布方式
       this.form.ios_deploy_mod = Object.is(this.form.ios_deploy_mod, '1') ? 'AppStore' : 'In House';
     },
     dataTypeTransformString() {
       // 应用用户
-      this.form.apply_for = Object.is(this.form.apply_for, '面向企业内部用户') ? '1' : '2';
-      // 是否客户专属
+      this.form.apply_for = Object.is(this.form.apply_for, '企业内部用户') ? '1' : '2';
+      // 是否专属
       this.form.is_exclusive = Object.is(this.form.is_exclusive, '否') ? '0' : '1';
       // 发布方式
       this.form.ios_deploy_mod = Object.is(this.form.ios_deploy_mod, 'AppStore') ? '1' : '2';
     },
     // 图片上传
-    handleAvatarSuccess(res) {
-      console.log('res', res);
+    handleAvatarSuccess() {
       // this.form.icon_url = URL.createObjectURL(file.raw);
     },
     // 图片上传前的处理
     beforeAvatarUpload(file) {
-      const isJPG = file.type in ['image/jpeg', 'image/jpg', 'image/png'];
+      // const isJPG = ['image/png'].indexOf(file.type);
       const isLt2M = file.size / 1024 / 1024 < 2;
 
-      if (!isJPG) {
-        this.$message.error('上传头像图片格式只支持 JPG/PNG/JPEG 格式!');
-      }
+      // if (isJPG === -1) {
+      //   this.$message.error('上传头像图片格式只支持 PNG 格式!');
+      //   return;
+      // }
 
       if (!isLt2M) {
         this.$message.error('上传头像图片大小不能超过 2MB!');
@@ -258,6 +263,11 @@ export default {
     changeDisabledField() {
       for (let key in this.disabledField) {
         this.disabledField[key] = false;
+      }
+    },
+    changeDisabledFieldToTrue() {
+      for (let key in this.disabledField) {
+        this.disabledField[key] = true;
       }
     },
     // 消息通知类型
@@ -295,6 +305,7 @@ export default {
         this.notifyMessage('success');
         this.$emit('getAllListData');
         this.$emit('changeDialogVisibleFalse');
+        this.changeDisabledFieldToTrue();
       } else if (Number(res?.data?.code) === 400) {
         this.notifyMessage('message', res);
       } else {
@@ -303,6 +314,7 @@ export default {
     },
     cancle() {
       this.$emit('changeDialogVisibleFalse');
+      this.changeDisabledFieldToTrue();
     },
     // 图片上传
     async uploadImage(req) {
@@ -312,11 +324,16 @@ export default {
       const formdata = new FormData();
       formdata.append('__upfile__', req.file);
       axios
-        .post('https://manager-test.mypaas.com/app/index/upload-app-logo', formdata, config)
+        .post(this.uploadUrl, formdata, config)
         .then(res => {
-          console.log('image upload succeed.');
-          console.log('res', res);
-          this.form.icon_url = res?.data.result;
+          if (Object.is(res.data.isSuccess, false)) {
+            this.$notify.error({
+              title: '上传失败😭',
+              message: `${res.data.message}`,
+            });
+          } else {
+            this.form.icon_url = res?.data.result;
+          }
         })
         .catch(err => {
           console.log(err.message);
@@ -411,36 +428,63 @@ input[type='file'] {
   background-color: #f5f7fa;
   border-radius: 3px;
   padding: 0px 8px;
+  line-height: 24px;
+  color: #999999;
 }
 
 .promptWord {
-  margin-left: 60px;
   color: #999999;
   margin-bottom: 20px;
 }
 
 .typeDiv {
-  width : 70%;
+  width: 80%;
   height: 120px;
   display: flex;
   flex-direction: row;
-  margin-left: 35px;
   margin-bottom: 20px;
+}
+.type-name {
+  width: 120px;
+  color: #222222;
+  font-family: PingFang SC;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
 }
 .type-left,
 .type-right {
   flex: 1;
   display: inline-block;
-  margin-left: 20px;
   font-size: 18px;
-  border-radius: 4px;
-  color: #0059DE;
+  border-radius: 3px;
+  color: #0059de;
 
   display: flex;
   flex-direction: column;
-  border: 1px solid #DDDDDD;
+  border: 1px solid #dddddd;
   justify-content: center;
   align-items: center;
+}
+
+.type-right {
+  color: #8c939d;
+  position: relative;
+  margin-left: 30px;
+}
+
+.type-right-building {
+  position: absolute;
+  background-color: #0059de;
+  right: 0px;
+  top: 0px;
+  color: #f5f7fa;
+  font-size: 14px;
+  border-radius: 3px;
+  padding: 4px;
+}
+
+.type-right-selected {
 }
 
 .iconClass {
@@ -448,8 +492,55 @@ input[type='file'] {
   margin-bottom: 10px;
 }
 
-.type-left:hover,
-.type-right:hover {
+.type-left {
+  border: 1px solid #0059de;
+}
+
+/* .type-left:hover {
   border: 1px solid #0059DE;
+} */
+
+.btn {
+  background: #0059de !important;
+  border-radius: 3px !important;
+  color: #ffffff !important;
+  font-size: 14px !important;
+  font-family: PingFang SC !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+}
+
+.uploadWords {
+  color: #999999;
+  font-family: PingFang SC;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+}
+
+.item .el-form-item__label {
+  color: #222222;
+  font-family: PingFang SC;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+}
+
+.el-radio__label {
+  color: #222222 !important;
+  font-family: PingFang SC;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+}
+
+.el-radio__input.is-checked .el-radio__inner {
+  border-color: #0059de !important;
+  background: #0059de !important;
+}
+
+.avatar-uploader .el-upload {
+  border: 1px dashed #cccccc !important;
+  border-radius: 3px !important;
 }
 </style>

@@ -365,6 +365,11 @@ export default {
 .header-title {
   margin: 0 50px;
   text-align: left;
+  font-size: 16px !important;
+  font-family: PingFang SC;
+  font-style: normal;
+  font-weight: normal;
+  color: #222222;
 }
 .forms {
   width: 70%;
@@ -375,6 +380,7 @@ export default {
 .el-form-item__content {
   width: 100%;
   padding-left: 80px;
+  color:red;
 }
 
 .el-select,
@@ -388,5 +394,18 @@ export default {
 
 .btn {
   width: 30% !important;
+  /* background: #0059de !important; */
+  border-radius: 3px !important;
+  color: #ffffff !important;
+  font-size: 14px !important;
+  font-family: PingFang SC !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+}
+.btn:nth-child(1) {
+  color: #222222 !important;
+}
+.btn:nth-child(2) {
+  background: #0059de !important;
 }
 </style>

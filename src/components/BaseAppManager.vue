@@ -1,22 +1,16 @@
 <template>
   <div class="container">
     <div class="header">
-      <span class="header_title">我的应用</span>
+      <span class="header_title">基础应用</span>
     </div>
     <div class="appContainer">
-      <div v-for="app in appList" :key="app.id" class="singleAppContainer">
-        <app-manager-info
-          :appTitle="app.name"
-          :appApplyFor="app.apply_for"
-          :appIconUrl="app.icon_url"
-          :appDescription="app.description"
-          :appId="app.id"
-          :appType="app.type"
-          :appInfo="app"
+      <div v-for="app in appList" :key="app.appId" class="singleAppContainer">
+        <BaseAppManagerInfo
+          :app="app"
+          @getAppList="getAppList"
           :createAppLabel="createAppLabel"
           @changeDialogVisibleTrue="changeDialogVisibleTrue"
           @changeCurrentEditAppParams="changeCurrentEditAppParams"
-          @getAllListData="getAllListData"
           @changeCreateAppLabel="changeCreateAppLabelFalse"
           @changeDialogVisibleFalse="changeDialogVisibleFalse"
           @changeCreateAppLabelFalse="changeCreateAppLabelFalse"
@@ -29,11 +23,13 @@
     </div>
 
     <el-drawer :title="formTitle" :visible.sync="dialogVisible" size="40%">
-      <app-manager-form
+      <base-app-managerForm
         :currentEditAppParams="currentEditAppParams"
+        @changeCurrentEditAppParams="changeCurrentEditAppParams"
         :createAppLabel="createAppLabel"
         @changeDialogVisibleFalse="changeDialogVisibleFalse"
-        @getAllListData="getAllListData"
+        @changeDialogVisibleTrue="changeDialogVisibleTrue"
+        @getAppList="getAppList"
         @changeCreateAppLabelFalse="changeCreateAppLabelFalse"
         @changeCreateAppLabelTrue="changeCreateAppLabelTrue"
       />
@@ -42,16 +38,13 @@
 </template>
 
 <script>
-import AppManagerInfo from './AppManagerInfo.vue';
-import AppManagerForm from './AppManagerForm.vue';
+import BaseAppManagerForm from './BaseAppManagerForm.vue';
+import BaseAppManagerInfo from './BaseAppManagerInfo.vue';
 
-import { getListData, deleteSingleApp } from './../api/appManagerApi';
+import { getBaseApp } from '../api/baseAppManagerApi';
+
 export default {
-  name: 'AppManager',
-  components: {
-    AppManagerInfo,
-    AppManagerForm,
-  },
+  name: 'BaseAppManager',
   data() {
     return {
       appList: [],
@@ -60,30 +53,26 @@ export default {
       createAppLabel: true,
     };
   },
-  computed : {
-    formTitle: function() {
+  computed: {
+    formTitle: function () {
       return this.createAppLabel === true ? '新建应用' : '编辑应用';
-    }
+    },
+  },
+
+  components: {
+    BaseAppManagerForm,
+    BaseAppManagerInfo,
   },
   methods: {
-    async getAllListData() {
-      const appList = await getListData();
-      this.appList = appList.data.data;
-      console.log(this.appList);
+    async getAppList() {
+      const res = await getBaseApp();
+      this.appList = res?.data?.data?.list;
     },
     changeDialogVisibleTrue() {
       this.dialogVisible = true;
     },
     changeDialogVisibleFalse() {
       this.dialogVisible = false;
-    },
-    changeCurrentEditAppParams(params) {
-      this.currentEditAppParams = params;
-    },
-    async deleteApp(params) {
-      const res = await deleteSingleApp(params);
-      if (res !== 200) return;
-      await this.getAllListData();
     },
     addApp() {
       this.dialogVisible = true;
@@ -98,9 +87,14 @@ export default {
       if (this.createAppLabel) return;
       this.createAppLabel = true;
     },
+    changeCurrentEditAppParams(params) {
+      
+      this.currentEditAppParams = params;
+      console.log(777,this.currentEditAppParams);
+    },
   },
   async created() {
-    this.getAllListData();
+    await this.getAppList();
   },
 };
 </script>
@@ -147,8 +141,8 @@ export default {
 }
 
 .addAppDiv {
-  width: 20%;
-  height: 200px;
+  width: 22%;
+  height: 140px;
   box-shadow: 0px 2px 8px rgba(100, 101, 102, 0.2);
   /* width: 40%; */
   padding: 20px;

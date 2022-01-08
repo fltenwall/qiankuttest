@@ -13,46 +13,43 @@
         <span>删除APP后相关数据将会全部删除，且不可恢复！</span>
         <span slot="footer" class="dialog-footer">
           <el-button @click="dialogVisible = false">取 消</el-button>
-          <el-button type="danger" @click="deleteApp">删除</el-button>
+          <el-button type="danger" @click="deleteAppFunc">删除</el-button>
         </span>
       </el-dialog>
       <div class="main-left">
-        <img :src="this.appIconUrl" alt="" />
+        <img :src="this.app.icon" alt="" />
       </div>
       <div class="main-right">
-        <div class="main-right-title">{{ this.appTitle }} <i class="el-icon-mobile-phone icon-mobile"></i></div>
-        <div class="main-right-message">{{ this.appApplyFor === '1' ? '企业内部用户' : '企业供应商客户' }}</div>
-        <div class="main-right-label">
-          <span class="main-right-label-words">{{ this.appInfo.is_exclusive ? '客户专属' : '非客户专属' }}</span>
-        </div>
+        <div class="main-right-title">{{ this.app.appName }} <i class="el-icon-s-platform icon-mobile"></i></div>
+
+        <div class="main-right-message">基础应用</div>
       </div>
     </div>
     <div class="footer">
-      <el-tooltip effect="dark" :content="this.appDescription" placement="bottom-end" :disabled="dscriptionShow">
-        <span class="main-dscription">应用描述：{{ this.appDescription }}</span>
+      <el-tooltip effect="dark" :content="this.app.desc" placement="bottom-end" :disabled="dscriptionShow">
+        <span class="main-dscription">应用描述：{{ this.app.desc }}</span>
       </el-tooltip>
-      
     </div>
   </div>
 </template>
 
 <script>
-import { deleteSingleApp } from '../api/appManagerApi';
+import { delBaseApp } from '../api/baseAppManagerApi';
 export default {
-  name: 'AppManagerInfo',
-  props: ['appTitle', 'appApplyFor', 'appIconUrl', 'appDescription', 'appId', 'appType', 'appInfo', 'createAppLabel'],
+  name: 'BaseAppManagerInfo',
+  props: ['app'],
   data() {
     return {
       visible: false,
       dialogVisible: false,
       editMore: false,
-      dialogTitle: `确认删除 ${this.appTitle} APP？`,
+      dialogTitle: `确认删除 ${this.app.appName} APP？`,
     };
   },
-  computed :{
-    dscriptionShow(){
-      return this.appDescription.length > 20 ? false : true;
-    }
+  computed: {
+    dscriptionShow() {
+      return this.app.desc.length > 20 ? false : true;
+    },
   },
   methods: {
     showButton() {
@@ -61,19 +58,19 @@ export default {
     editApp() {
       this.$emit('changeCreateAppLabelFalse');
       this.$emit('changeDialogVisibleTrue');
-      this.$emit('changeCurrentEditAppParams', { id: this.appId, type: this.appType });
+      this.$emit('changeCurrentEditAppParams', { appId: this.app.appId });
       this.visible = false;
     },
     // 删除应用
-    async deleteApp() {
-      const res = await deleteSingleApp({ id: this.appId, type: this.appType });
+    async deleteAppFunc() {
+      const res = await delBaseApp({ appId: this.app.appId });
       if (res.data.code === 0) {
         this.$message({
           title: '删除失败，请重试😢',
           message: '删除执行成功😁',
           type: 'success',
         });
-        this.$emit('getAllListData');
+        this.$emit('getAppList');
       } else {
         this.$notify.error({
           title: '删除失败，请重试😢',
@@ -95,7 +92,7 @@ export default {
 
 <style scoped>
 .Container {
-  height: 200px;
+  height: 140px;
   box-shadow: 0px 2px 8px rgba(100, 101, 102, 0.2);
   /* width: 40%; */
   padding: 20px;
@@ -108,6 +105,7 @@ export default {
   box-shadow: 0px 2px 8px rgba(100, 101, 102, 0.6);
 }
 .main {
+  height: 80px;
   width: 100%;
   display: flex;
   flex: 1;
@@ -141,6 +139,7 @@ export default {
 
 .main-left img {
   width: 60%;
+  max-height: 80px;
 }
 
 .main-right {
@@ -148,12 +147,11 @@ export default {
 }
 
 .footer {
-  height: 100px;
+  /* height: 30px; */
   margin-top: 10px;
   margin-bottom: 10px;
   overflow: hidden;
 }
-
 
 .main-right-label {
   /* margin: 8px 0; */

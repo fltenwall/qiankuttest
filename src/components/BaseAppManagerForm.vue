@@ -1,6 +1,6 @@
 <template>
   <el-form ref="form" :model="form" label-width="120px" class="container item" :rules="rules" label-position="left">
-    <div class="typeDiv">
+    <div class="typeDiv" prop="appType">
       <span class="type-name">应用类型</span>
       <span class="type-left">
         <i class="el-icon-s-platform iconClass"></i>
@@ -48,8 +48,8 @@
       <el-input v-model="form.callbackUrl" placeholder="请输入回调地址"></el-input>
     </el-form-item>
 
-    <el-form-item label="appSecret" prop="appCode" class="bundleID" v-if="!this.createAppLabel">
-      <span>{{ this.form.appSecret }}</span>
+    <el-form-item label="AppSecret" prop="appSecret" class="bundleID" v-if="!this.createAppLabel">
+      <el-input v-model="form.appSecret" placeholder="请输入回调地址" :disabled="disabledField.appSecret"></el-input>
     </el-form-item>
     <!-- 最大200字符 -->
     <el-form-item label="应用描述" prop="desc">
@@ -80,7 +80,7 @@ export default {
         appName: '', //应用名称，非空
         icon: '', //应用图标，非空
         desc: '', //应用介绍
-        appType: 2, //应用类型，1PC应用  2移动应用  非空
+        appType: 1, //应用类型，1PC应用  2移动应用  非空
         appCode: '', //应用编码   非空
         appUrl: '', //应用地址
         callbackUrl: '', //回调地址
@@ -95,12 +95,12 @@ export default {
       },
       rules: {
         appName: [
-          { required: true, message: '请输入应用用户名称', trigger: 'blur' },
+          { required: true, message: '请输入应用名称', trigger: 'blur' },
           { min: 1, max: 10, message: '长度最大为10个字符', trigger: 'blur' },
         ],
         desc: [{ max: 200, message: '长度最大为200个字符', trigger: 'blur' }],
         appCode: [{ required: true, message: '应用编码不能为空', trigger: 'blur' }],
-        icon: [{ required: true, message: '请选择应用图标', trigger: 'blur' }],
+        icon: [{ required: true, message: '请上传应用图标', trigger: 'blur' }],
       },
       dialogImageUrl: '',
     };
@@ -137,6 +137,7 @@ export default {
       });
       if (isVaild) {
         this.form.desc = this.form.desc.trim();
+        this.form.appType = 1;
         // this.dataTypeTransformString();
         if (this.newCreateAppLabel) {
           // 新建
@@ -172,7 +173,7 @@ export default {
         this.$emit('changeDialogVisibleFalse');
         this.changeDisabledFieldToTrue();
       } else if (res?.data?.msg.length !== '') {
-        this.notifyMessage('message',res);
+        this.notifyMessage('message', res);
       } else {
         this.notifyMessage('failure');
       }
@@ -210,7 +211,7 @@ export default {
     checkUrlFormat() {
       const reg = /^(?:(http|https|ftp):\/\/)?((?:[\w-]+\.)+[a-z0-9]+)((?:\/[^/?#]*)+)?(\?[^#]+)?(#.+)?$/;
       if (
-        (this.form.appUrl.length !== 0 && !reg.exec(this.form.appUrl) ) ||
+        (this.form.appUrl.length !== 0 && !reg.exec(this.form.appUrl)) ||
         (this.form.callbackUrl.length !== 0 && !reg.exec(this.form.callbackUrl))
       ) {
         this.$notify.error({
@@ -257,7 +258,7 @@ export default {
       // }
 
       if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!');
+        this.$message.error('图片大小不能超过 1MB!');
       }
       return isLt2M;
     },
@@ -304,6 +305,9 @@ export default {
     cancle() {
       this.$emit('changeDialogVisibleFalse');
       this.changeDisabledFieldToTrue();
+    },
+    formCloseDialog() {
+      this.$refs.form.resetFields();
     },
   },
   async created() {
@@ -393,7 +397,7 @@ input[type='file'] {
   align-items: center;
 }
 
-.type-left{
+.type-left {
   position: relative;
 }
 
@@ -404,16 +408,15 @@ input[type='file'] {
   display: inline-block;
   width: 30px;
   height: 30px;
-  background-color: #0059DE;
-  border-radius:30px 0 0 0;
-  
+  background-color: #0059de;
+  border-radius: 30px 0 0 0;
 }
 
 .type-left-check {
   position: absolute;
   right: 0;
   bottom: 0;
-  color:#ffffff;
+  color: #ffffff;
 }
 
 .type-right {

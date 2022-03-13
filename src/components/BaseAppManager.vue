@@ -22,8 +22,9 @@
       </div>
     </div>
 
-    <el-drawer :title="formTitle" :visible.sync="dialogVisible" size="40%">
+    <el-drawer :title="formTitle" :visible.sync="dialogVisible" size="40%" @close="closeDialog" >
       <base-app-managerForm
+        ref="appForm"
         :currentEditAppParams="currentEditAppParams"
         @changeCurrentEditAppParams="changeCurrentEditAppParams"
         :createAppLabel="createAppLabel"
@@ -88,9 +89,10 @@ export default {
       this.createAppLabel = true;
     },
     changeCurrentEditAppParams(params) {
-      
       this.currentEditAppParams = params;
-      console.log(777,this.currentEditAppParams);
+    },
+    closeDialog() {
+      this.$refs.appForm.formCloseDialog();
     },
   },
   async created() {

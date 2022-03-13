@@ -68,6 +68,7 @@ const searchPm = (params = { keyword: '' }) => {
   return POST('backend/tenant/search-pm', params);
 };
 
+
 export {
   getManagerDetail,
   editManagerInit,

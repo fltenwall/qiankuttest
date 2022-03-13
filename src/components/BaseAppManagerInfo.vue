@@ -10,7 +10,7 @@
         </el-popover>
       </div>
       <el-dialog :title="this.dialogTitle" :visible.sync="dialogVisible" width="30%">
-        <span>删除APP后相关数据将会全部删除，且不可恢复！</span>
+        <span>删除应用后相关数据将会全部删除，且不可恢复！</span>
         <span slot="footer" class="dialog-footer">
           <el-button @click="dialogVisible = false">取 消</el-button>
           <el-button type="danger" @click="deleteAppFunc">删除</el-button>
@@ -20,7 +20,11 @@
         <img :src="this.app.icon" alt="" />
       </div>
       <div class="main-right">
-        <div class="main-right-title">{{ this.app.appName }} <i class="el-icon-s-platform icon-mobile"></i></div>
+        <div class="main-right-title">{{ this.app.appName }} 
+          <i class="el-icon-s-platform icon-mobile" v-if="this.app.isPcApp"></i>
+          <i class="el-icon-mobile-phone icon-mobile" v-if="!this.app.isPcApp"></i>
+        </div>
+                    
 
         <div class="main-right-message">基础应用</div>
       </div>
@@ -43,12 +47,12 @@ export default {
       visible: false,
       dialogVisible: false,
       editMore: false,
-      dialogTitle: `确认删除 ${this.app.appName} APP？`,
+      dialogTitle: `确认删除${this.app.appName}？`,
     };
   },
   computed: {
     dscriptionShow() {
-      return this.app.desc.length > 20 ? false : true;
+      return this.app.desc.length >12 ? false : true;
     },
   },
   methods: {

@@ -40,7 +40,7 @@
           @selection-change="handleSelectionChange"
           @select="select"
         >
-          <el-table-column type="selection" width="55"> </el-table-column>
+          <el-table-column type="selection"> </el-table-column>
           <el-table-column prop="username" label="姓名"> </el-table-column>
           <el-table-column prop="usercode" label="账号"> </el-table-column>
           <el-table-column prop="deptName" label="部门"> </el-table-column>
@@ -76,6 +76,11 @@ export default {
       isCancelSelect: true,
     };
   },
+  watch: {
+    platformId: function () {
+      this.selectedManagerList = this.managerList;
+    },
+  },
   methods: {
     async search() {
       if (this.searchInput !== '') {
@@ -86,7 +91,6 @@ export default {
         this.selectedManagerList.map(item => (this.tempObj[item.userCode] = item));
         this.tableData.map(item => {
           if (this.tempObj[item.usercode]) {
-            console.log(1111, item);
             this.$refs.multipleTable.toggleRowSelection(item, true);
           }
         });
@@ -95,19 +99,20 @@ export default {
       }
     },
     handleSelectionChange(select) {
-      select.map(user => {
-        console.log(555, user, user.usercode, this.tempObj[user.usercode]);
-        if (!this.tempObj[user.usercode]) {
-          user.userName = user.username;
-          user.userCode = user.usercode;
-          this.selectedManagerList.push(user);
-          this.tempObj[user.usercode] = user;
-          this.$message({
-            message: '添加成员成功',
-            type: 'success',
-          });
-        }
-      });
+      if (select.length === 0) {
+        this.tableData.forEach(item => {
+          this.select([], item);
+        });
+      } else {
+        select.map(user => {
+          if (!this.tempObj[user.usercode]) {
+            user.userName = user.username;
+            user.userCode = user.usercode;
+            this.selectedManagerList.push(user);
+            this.tempObj[user.usercode] = user;
+          }
+        });
+      }
     },
     select(selection, row) {
       let sele = selection.filter(item => {
@@ -121,10 +126,6 @@ export default {
           if (this.selectedManagerList[i].userCode === row.usercode) {
             delete this.tempObj[this.selectedManagerList[i].userCode];
             this.selectedManagerList.splice(i, 1);
-            this.$message({
-              message: '删除成员成功',
-              type: 'success',
-            });
             break;
           }
         }
@@ -132,16 +133,17 @@ export default {
     },
     deleteUser(index) {
       this.tableData.map(item => {
-        if (item.userCode === this.selectedManagerList[index].usercode) {
+        if (item.usercode === this.selectedManagerList[index]?.userCode) {
+          console.log(item.usercode, this.selectedManagerList[index].userCode);
           this.$refs.multipleTable.toggleRowSelection(item, false);
           delete this.tempObj[item.usercode];
         }
       });
       this.selectedManagerList.splice(index, 1);
-      this.$message({
-        message: '删除成员成功',
-        type: 'success',
-      });
+    },
+    clearSearchInput() {
+      this.searchInput = '';
+      this.tableData = [];
     },
     async save() {
       const params = {
@@ -151,9 +153,9 @@ export default {
       return await saveMultiManager(params);
     },
   },
-  created() {
-    console.log(this.managerList);
-  },
+  // created() {
+  //   console.log(this.managerList);
+  // },
 };
 </script>
 

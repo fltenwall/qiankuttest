@@ -5,7 +5,7 @@
       <div class="header-right" v-if="!this.isRecord">{{ currentGroup }}</div>
       <div class="header-right" v-else>
         <div class="header-right-title" @click="backToTable">
-          <span style="color: #cccccc; cursor: pointer">{{ currentGroup }}</span> > 操作日志
+          <span style="color: #cccccc; cursor: pointer">{{ currentGroup }}</span> > <span style="color: #222222;font-weight: 600;">操作日志</span>
         </div>
         <div class="header-right-search">
           <el-input
@@ -26,10 +26,11 @@
           @click="getManagerList('apps_super_admin')"
           v-bind:style="{
             background: styleObject.apps_super_admin.activeBackground,
+            fontWeight: styleObject.apps_super_admin.fontWeight,
           }"
         >
           <i
-            class="el-icon-user-solid"
+            class="el-icon-user-solid icon-user"
             v-bind:style="{
               color: styleObject.apps_super_admin.activeColor,
             }"
@@ -41,10 +42,11 @@
           @click="getManagerList('yzs_super_admin')"
           v-bind:style="{
             background: styleObject.yzs_super_admin.activeBackground,
+            fontWeight: styleObject.yzs_super_admin.fontWeight,
           }"
         >
           <i
-            class="el-icon-user-solid"
+            class="el-icon-user-solid icon-user"
             v-bind:style="{
               color: styleObject.yzs_super_admin.activeColor,
             }"
@@ -56,15 +58,16 @@
           @click="getManagerList('yzs_child_admin')"
           v-bind:style="{
             background: styleObject.yzs_child_admin.activeBackground,
+            fontWeight: styleObject.yzs_child_admin.fontWeight,
           }"
         >
           <i
-            class="el-icon-user-solid"
+            class="el-icon-user-solid icon-user"
             v-bind:style="{
               color: styleObject.yzs_child_admin.activeColor,
             }"
           ></i
-          >管理平台子管理员
+          >管理后台子管理员
         </div>
       </div>
       <div class="main-right" v-if="!this.isRecord">
@@ -90,7 +93,7 @@
           }"
           :cell-style="{ padding: '16px', textAlign: 'center' }"
         >
-          <el-table-column prop="currentGroup" label="管理员"> </el-table-column>
+          <el-table-column prop="currentGroup" label="管理组"> </el-table-column>
           <el-table-column prop="managerListString" label="成员"> </el-table-column>
           <el-table-column prop="authMessage" label="权限"> </el-table-column>
           <el-table-column fixed="right" label="操作">
@@ -101,19 +104,27 @@
           </el-table-column>
         </el-table>
       </div>
-      <div class="main-righ" v-else>
+      <div class="main-righ" v-if="this.isRecord">
         <!-- <div class="main-right-table"> -->
-        <el-table :data="recordList" style="width: 100%">
-          <el-table-column fixed label="序号" type="index">
-            <template slot-scope="scope">
-              <span>{{ (currentPage - 1) * pageSize + scope.$index + 1 }}</span>
-            </template>
+        <el-table :data="recordList" style="width: 100%"           :header-cell-style="{
+            textAlign: 'center',
+            background: '#FBFBFB',
+            fontSize: '14px',
+            color: '#666666',
+            fontWeight: 'normal',
+          }">
+          <el-table-column label="序号" type="index" align="center">
+           
+              <template slot-scope="scope">
+                <span>{{ (currentPage - 1) * pageSize + scope.$index + 1 }}</span>
+              </template>
+     
           </el-table-column>
-          <el-table-column prop="tenant_name" label="企业" v-if="this.adminTypes.apps_super_admin"> </el-table-column>
-          <el-table-column prop="user_name" label="管理员"> </el-table-column>
-          <el-table-column prop="from" label="模块"> </el-table-column>
-          <el-table-column prop="createtime" label="时间"> </el-table-column>
-          <el-table-column prop="info" label="操作内容"> </el-table-column>
+          <el-table-column prop="tenant_name" label="企业" v-if="this.adminTypes.apps_super_admin" align="center"> </el-table-column>
+          <el-table-column prop="user_name" label="管理员" align="center"> </el-table-column>
+          <el-table-column prop="from" label="模块" align="center"> </el-table-column>
+          <el-table-column prop="createtime" label="时间" align="center"> </el-table-column>
+          <el-table-column prop="info" label="操作内容" align="center"> </el-table-column>
         </el-table>
         <!-- </div> -->
 
@@ -131,7 +142,7 @@
           </el-pagination>
         </div>
       </div>
-      <el-dialog title="编辑成员" :visible.sync="dialogVisible" width="45%">
+      <el-dialog title="编辑成员" :visible.sync="dialogVisible" width="45%" :closeOnClickModal=closeOnClickModal>
         <!-- 穿梭框 -->
         <ManagerConfigEdit ref="editChild" :managerList="managerList" :platformId="platformId" />
         <span slot="footer" class="dialog-footer">
@@ -160,6 +171,7 @@ export default {
       managerList: [],
       currentGroup: '企业平台超级管理员',
       platformCode: '',
+      currentGroupType: 'apps_super_admin',
       platformId: 0,
       isRecord: false,
       // 页码相关变量
@@ -172,6 +184,7 @@ export default {
       searchInput: '',
 
       dialogVisible: false,
+      closeOnClickModal: false,
 
       adminTypes: {
         apps_super_admin: true,
@@ -182,14 +195,17 @@ export default {
         apps_super_admin: {
           activeColor: '#0059DE',
           activeBackground: 'rgba(42, 106, 255, 0.1)',
+          fontWeight: 500,
         },
         yzs_super_admin: {
           activeColor: '#0059DE',
           activeBackground: 'rgba(42, 106, 255, 0.1)',
+          fontWeight: 500,
         },
         yzs_child_admin: {
           activeColor: '#0059DE',
           activeBackground: 'rgba(42, 106, 255, 0.1)',
+          fontWeight: 500,
         },
       },
     };
@@ -197,15 +213,18 @@ export default {
   computed: {},
   methods: {
     async getManagerList(type = 'apps_super_admin') {
+      this.currentGroupType = type;
       for (let key in this.adminTypes) {
         if (key === type) {
           this.adminTypes[key] = true;
           this.styleObject[key].activeBackground = 'rgba(42, 106, 255, 0.1)';
           this.styleObject[key].activeColor = '#0059DE';
+          this.styleObject[key].fontWeight = 500;
         } else {
           this.adminTypes[key] = false;
           this.styleObject[key].activeBackground = '';
           this.styleObject[key].activeColor = '#DDDDDD';
+          this.styleObject[key].fontWeight = 'normal';
         }
       }
       const params = { platformCode: type };
@@ -215,11 +234,11 @@ export default {
       this.platformCode = res?.data?.data?.currentGroup?.platformCode;
       res?.data?.data?.userList.map(user => {
         this.managerListString += `${user.userName}, `;
-        // this.managerList.push({userName:user.userName,id:user.id});
       });
+      this.managerListString = this.managerListString.substr(0,this.managerListString.length-2)
       this.platformId = res?.data?.data?.currentGroup?.id;
       this.managerList = [...res?.data?.data?.userList];
-      let authMessage = this.authMessage(this.platformCode);
+      let authMessage = res?.data?.data?.allGroup.filter(item => item.platformCode === this.platformCode)[0].platformDesc;
       const manageList = [];
       manageList.push({
         managerListString: this.managerListString,
@@ -228,16 +247,7 @@ export default {
       });
       this.tableData = manageList;
       this.isRecord = false;
-    },
-    authMessage(platformCode) {
-      switch (platformCode) {
-        case 'apps_super_admin':
-          return '具有所有企业平台超级管理员的管理权限';
-        case 'yzs_super_admin':
-          return '具有管理平台超级管理员的管理权限';
-        case 'yzs_child_admin':
-          return '具有管理平台子管理员的管理权限';
-      }
+      this.currentPage = 1;
     },
     backToTable() {
       this.isRecord = false;
@@ -266,7 +276,8 @@ export default {
       const pageData = res?.data?.data?.pageData;
       this.recordList = res?.data?.data?.list;
       this.pageTotalCount = Number(pageData.total);
-      this.pageSize = Number(res.data.data.pageData.pageSize);
+      this.pageSize = val;
+      // this.pageSize = Number(res.data.data.pageData.pageSize);
       this.currentPage = 1;
       this.isPageSizeChange = false;
     },
@@ -293,13 +304,15 @@ export default {
       const pageData = res?.data?.data?.pageData;
       this.recordList = res?.data?.data?.list;
       this.pageTotalCount = Number(pageData.total);
-      this.pageSize = Number(res.data.data.pageData.pageSize);
+      // this.pageSize = Number(res.data.data.pageData.pageSize);
+      this.currentPage = 1;
+      this.searchInput = '';
     },
     editManager() {
       this.dialogVisible = true;
     },
     downloadExcel() {
-      window.open(`${BASEURL}banner/yzs-admin/export`);
+      window.open(`${BASEURL}banner/yzs-admin/export?platform_code=${this.platformCode}`);
     },
     async saveData() {
       const res = await this.$refs.editChild.save();
@@ -309,7 +322,8 @@ export default {
           message: '恭喜💐，保存成功！😜',
           type: 'success',
         });
-        await this.getManagerList();
+        await this.getManagerList(this.currentGroupType);
+        this.clearSearchInput();
         this.dialogVisible = false;
       } else {
         this.$notify.error({
@@ -318,6 +332,9 @@ export default {
         });
       }
     },
+    clearSearchInput(){
+      this.$refs.editChild.clearSearchInput();
+    }
   },
   async created() {
     await this.getManagerList();
@@ -342,7 +359,7 @@ export default {
   box-shadow: inset 0px -1px 0px #e9ebee;
   font-weight: 600;
   font-size: 16px;
-  line-height: 64px;
+  line-height: 20px;
   color: #222222;
 }
 .header-left,
@@ -355,7 +372,7 @@ export default {
 }
 .header-right-title {
   float: left;
-  line-height: 64px;
+  line-height: 20px;
   font-family: PingFang SC;
   font-style: normal;
   font-weight: normal;
@@ -363,6 +380,7 @@ export default {
 }
 .header-right-search {
   float: right;
+  margin-top: -15px;
 }
 
 .header-left,
@@ -374,6 +392,10 @@ export default {
 }
 .header-left-first {
   box-shadow: inset -1px -1px 0px #e9ebee;
+}
+
+.icon-user {
+  padding-right: 5px;
 }
 
 .main {

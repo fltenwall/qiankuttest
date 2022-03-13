@@ -1,5 +1,5 @@
 const axios = require('axios');
-const BASEURL = window.location.href.split('/')[2] === 'manager.mypaas.com' ? 'https://manager.mypaas.com/' : 'https://manager-test.mypaas.com/';
+const BASEURL = `${window.location.origin}/`;
 
 const GET = function(url, params){
     return axios.get(`${BASEURL}${url}`, {params})

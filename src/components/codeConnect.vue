@@ -7,9 +7,9 @@
     <div class="main">
       <div class="main-header">
         <div>
-          <i class="el-icon-arrow-left" @click="returnPage">返回</i>
-          <i v-html="'\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0'"></i>
-          <span>{{ this.currentRow.tenantName }}(企业代码: {{ this.currentRow.tenantCode }})</span>
+          <!-- <i class="el-icon-arrow-left" @click="returnPage">返回</i>
+          <i v-html="'\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0'"></i> -->
+          <span>{{ this.tenantName }} (企业代码: {{ this.tenantCode }})</span>
         </div>
 
         <el-button type="primary" @click="addConnect" class="btn">添加服务商</el-button>
@@ -19,13 +19,13 @@
           :data="tableData"
           border
           style="
-              width: 100%;
-              font-size: 14px;
-              color: #222222;
-              font-family: PingFang SC;
-              font-style: normal;
-              font-weight: normal;
-            "
+            width: 100%;
+            font-size: 14px;
+            color: #222222;
+            font-family: PingFang SC;
+            font-style: normal;
+            font-weight: normal;
+          "
           :row-style="{ height: '80px' }"
           :cell-style="{ padding: '0px', textAlign: 'center' }"
           :header-cell-style="{ textAlign: 'center', background: '#FBFBFB', fontSize: '14px' }"
@@ -42,6 +42,17 @@
               <el-button @click="editConnect(scope.row)" type="text" size="small" class="wordColor">编辑</el-button>
               <i v-html="'\u00a0\u00a0\u00a0\u00a0'"></i>
               <el-button @click="syncParty(scope.row)" type="text" size="small" class="wordColor">同步用户</el-button>
+              <i v-html="'\u00a0\u00a0\u00a0\u00a0'"></i>
+              <el-button
+                @click="setAsMainPartyApi(scope.row)"
+                type="text"
+                size="small"
+                class="wordColor"
+                v-if="!scope.row.isMainParty"
+                >设置为企业通讯录来源</el-button
+              >
+              <el-button type="text" v-else>当前主通讯录</el-button>
+              <el-button @click="delParty(scope.row)" type="text" size="small" class="wordColor delete">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -96,12 +107,23 @@
 </template>
 
 <script>
-import { getPartyList, getCanUseChannel, addThirdParty, doSyncParty, getInitPg } from '../api/apis';
+import {
+  getPartyList,
+  getCanUseChannel,
+  addThirdParty,
+  doSyncParty,
+  getInitPg,
+  setAsMainParty,
+  delThirdParty,
+} from '../api/apis';
 export default {
-  props: ['currentRow', 'page', 'currentAreaName'],
+  props: ['currentRow', 'page', 'currentAreaName', 'currentRowTenantId', 'currentTenantName', 'currentTenantCode'],
   name: 'Contanier',
   data() {
     return {
+      tenantId: this.currentRowTenantId,
+      tenantName: this.currentTenantName,
+      tenantCode: this.currentTenantCode,
       form: {},
       channelCode: '',
       selectChannel: '',
@@ -128,6 +150,16 @@ export default {
       this.currentRowData = newVal;
       this.initData();
     },
+    currentRowTenantId(newVal) {
+      this.tenantId = newVal;
+      this.initData();
+    },
+    currentTenantName(newVal) {
+      this.tenantName = newVal;
+    },
+    currentTenantCode(newVal) {
+      this.tenantCode = newVal;
+    },
   },
   async created() {
     await this.initData();
@@ -135,12 +167,12 @@ export default {
   methods: {
     async initData() {
       const tableData = await getPartyList({
-        tenantId: this.currentRowData.tenantId,
+        tenantId: this.tenantId,
         pageSize: 10,
         page: 1,
       });
       const channelList = await getCanUseChannel({
-        tenantId: this.currentRowData.tenantId,
+        tenantId: this.tenantId,
       });
       this.tableData = tableData.data.data.list;
       this.channelList = channelList.data.data;
@@ -173,7 +205,7 @@ export default {
     async handleSizeChange(pageSize) {
       this.isPageSizeChange = true;
       const tableData = await getPartyList({
-        tenantId: this.currentRowData.tenantId,
+        tenantId: this.tenantId,
         pageSize: pageSize,
         page: 1,
       });
@@ -187,7 +219,7 @@ export default {
     async handleCurrentChange(page) {
       if (this.isPageSizeChange === true) return;
       const tableData = await getPartyList({
-        tenantId: this.currentRowData.tenantId,
+        tenantId: this.tenantId,
         pageSize: this.pageSize,
         page: page,
       });
@@ -203,7 +235,7 @@ export default {
           message: '服务商不能为空',
         });
         isValid = false;
-      } else if (!/^[a-zA-Z_]{1,}$/.exec(this.channelCode)) {
+      } else if (!/^[a-zA-Z][0-9a-zA-Z_-]*$/.exec(this.channelCode)) {
         this.$notify.error({
           title: '失败 😭',
           message: '服务商代码仅支持英文字母及下划线组合',
@@ -213,7 +245,7 @@ export default {
       if (!isValid) return;
 
       const params = {
-        tenantId: this.currentRowData.tenantId || '', //租户ID
+        tenantId: this.tenantId || '', //租户ID
         channelId: this.selectChannelObj.channelId || this.channelId || '', //服务商ID
         channelName: this.selectChannelObj.channelName || this.selectChannel || '', //服务商名
         channelCode: this.channelCode, //租户code  用户填写的
@@ -262,12 +294,20 @@ export default {
         type: 'warning',
       })
         .then(() => {
-          const params = { partyId: data.partyId, tenantId: this.currentRowData.tenantId };
-          doSyncParty(params);
-          getInitPg(params);
-          this.$message({
-            type: 'success',
-            message: '操作成功!',
+          const params = { partyId: data.partyId, tenantId: this.tenantId };
+          doSyncParty(params).then(res => {
+            if (Number(res.data.code) !== 0) {
+              this.$message({
+                type: 'error',
+                message: '同步失败',
+              });
+              return;
+            }
+            getInitPg(params);
+            this.$message({
+              type: 'success',
+              message: '操作成功!',
+            });
           });
         })
         .catch(() => {
@@ -277,13 +317,52 @@ export default {
           });
         });
     },
+    async delParty(row) {
+      console.log(row, this.currentRowData);
+      await delThirdParty({ tenantId: this.tenantId, partyId: row.partyId }).then(res => {
+        if (Number(res.data.isSuccess) === 1 || res.code === 1) {
+          this.$message({
+            type: 'success',
+            message: '删除成功!',
+          });
+        } else {
+          this.$message({
+            type: 'error',
+            message: `删除失败，${res.data.msg}`,
+          });
+        }
+      });
+      await this.initData();
+    },
+    // 设置为企业通讯录来源
+    async setAsMainPartyApi(data) {
+      const params = {
+        partyId: data.partyId,
+        tenantId: this.tenantId,
+      };
+      setAsMainParty(params).then(res => {
+        if (Number(res.data.code) === 200) {
+          this.$message({
+            type: 'success',
+            message: '操作成功!',
+          });
+          this.handleSizeChange(this.pageSize);
+        } else {
+          this.$message({
+            type: 'error',
+            message: `失败，${res.data.msg}`,
+          });
+        }
+      });
+    },
   },
 };
 </script>
 
 <style scoped>
-.codeConnect{
+.codeConnect {
   width: 100%;
+  margin: 10px;
 }
 .header {
   padding: 20px 0;
@@ -298,7 +377,7 @@ export default {
 }
 
 .main {
-  width: 100%;
+  width: 95%;
   margin: 0 auto;
   min-height: 500px;
 }
@@ -342,5 +421,8 @@ export default {
   font-style: normal !important;
   font-weight: normal !important;
   font-family: PingFang SC !important;
+}
+.delete {
+  color: red !important;
 }
 </style>

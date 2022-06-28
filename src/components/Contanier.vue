@@ -53,7 +53,7 @@
             :cell-style="{ padding: '0px', textAlign: 'center' }"
             :header-cell-style="{ textAlign: 'center', background: '#FBFBFB', fontSize: '14px' }"
           >
-            <el-table-column fixed label="序号" width="60" type="index">
+            <el-table-column fixed label="序号" type="index">
               <template slot-scope="scope">
                 {{ scope.$index + (currentPage - 1) * pageSize + 1 }}
               </template>
@@ -68,8 +68,25 @@
                 <el-button @click="editTenantClick('edit', scope.row)" type="text" size="small" class="wordColor"
                   >编辑</el-button
                 >
-                <i v-html="'\u00a0\u00a0\u00a0\u00a0'"></i>
-                <el-popover placement="right" trigger="click">
+                <!-- <i v-html="'\u00a0\u00a0\u00a0\u00a0'"></i> -->
+                <!-- <el-button
+                  size="small"
+                  type="text"
+                  :disabled="Boolean(enableEmail)"
+                  class="wordColor"
+                  @click="sendMailCallback({ tenantId: scope.row.tenantId })"
+                  >重发激活邮件</el-button
+                > -->
+
+                <!-- <el-button
+                  @click="dialogFormVisible = true"
+                  type="text"
+                  size="small"
+                  style="margin-left: 16px"
+                  class="wordColor"
+                  >关联服务商租户</el-button
+                > -->
+                <!-- <el-popover placement="right" trigger="click">
                   <el-button
                     size="small"
                     type="text"
@@ -91,7 +108,7 @@
                   <el-button slot="reference" type="text" size="small" @click="moreClick(scope.row)" class="wordColor"
                     >更多</el-button
                   >
-                </el-popover>
+                </el-popover> -->
               </template>
             </el-table-column>
           </el-table>
@@ -108,40 +125,87 @@
             background
           >
           </el-pagination>
+          <el-drawer
+            :title="dialogTitle"
+            :visible.sync="addTenantDialog"
+            class="dialog"
+            direction="rtl"
+            ref="drawer"
+            custom-class="demo-drawer"
+            size="40%"
+          >
+            <edit-tenant
+              :confirmLoading="this.confirmLoading"
+              :editDialog="this.editDialog"
+              :currentRowTenantId="this.currentRowTenantId"
+              :editType="this.editType"
+              title="开通租户"
+              :eltreeData="this.eltreeData[0].children"
+              @changeConfirmDialog="changeConfirmDialog"
+              @changeConfirmLoading="changeConfirmLoading"
+              @changeConfirmTimeout="changeConfirmTimeout"
+              @changeTableData="changeTableData"
+            />
+          </el-drawer>
+          <el-drawer
+            :title="dialogTitle"
+            :visible.sync="editTenantDialog"
+            class="dialog"
+            direction="rtl"
+            ref="drawer"
+            custom-class="demo-drawer"
+            size="50%"
+            ><el-tabs v-model="activeName" tab-position="center">
+              <el-tab-pane label="基本信息" name="basicInformation">
+                <edit-tenant
+                  :confirmLoading="this.confirmLoading"
+                  :editDialog="this.editDialog"
+                  :currentRowTenantId="this.currentRowTenantId"
+                  :editType="this.editType"
+                  :eltreeData="this.eltreeData[0].children"
+                  title=""
+                  @changeConfirmDialog="changeConfirmDialog"
+                  @changeConfirmLoading="changeConfirmLoading"
+                  @changeConfirmTimeout="changeConfirmTimeout"
+                  @changeTableData="changeTableData"
+                />
+              </el-tab-pane>
+              <el-tab-pane label="关联服务商租户" name="codeConnect">
+                <codeConnect
+                  :enableEmail="this.enableEmail"
+                  :currentRowData="this.currentRowData"
+                  :currentRowTenantId="this.currentRowTenantId"
+                  :currentTenantName="this.currentTenantName"
+                  :currentTenantCode="this.currentTenantCode"
+                  :pageSize="this.pageSize"
+                  :page="this.currentPage"
+                  :currentAreaName="this.currentAreaName"
+                  @closeDialogFormVisible="this.closeDialogFormVisible"
+                />
+              </el-tab-pane>
+              <el-tab-pane label="私有化配置" name="personalConfig">
+                <personalConfig
+                  :personalConfigData="this.personalConfigData"
+                  :currentRowTenantId="this.currentRowTenantId"
+                  :editTenantDialog="this.editTenantDialog"
+                  @changeConfirmDialog="changeConfirmDialog"
+                  @changeSelectedTab="changeSelectedTab"
+                />
+              </el-tab-pane>
+            </el-tabs>
+          </el-drawer>
         </div>
-        <el-drawer
-          :title="dialogTitle"
-          :visible.sync="editTenantDialog"
-          class="dialog"
-          direction="rtl"
-          ref="drawer"
-          custom-class="demo-drawer"
-          size="40%"
-        >
-          <edit-tenant
-            :confirmLoading="this.confirmLoading"
-            :editDialog="this.editDialog"
+        <el-dialog :visible.sync="dialogFormVisible" width="90%" :show-close="false">
+          <codeConnect
+            :currentRow="this.currentRowData"
             :currentRowTenantId="this.currentRowTenantId"
-            :editType="this.editType"
-            :eltreeData="this.eltreeData[0].children"
-            @changeConfirmDialog="changeConfirmDialog"
-            @changeConfirmLoading="changeConfirmLoading"
-            @changeConfirmTimeout="changeConfirmTimeout"
-            @changeTableData="changeTableData"
+            :pageSize="this.pageSize"
+            :page="this.currentPage"
+            :currentAreaName="this.currentAreaName"
+            @closeDialogFormVisible="this.closeDialogFormVisible"
           />
-        </el-drawer>
+        </el-dialog>
       </div>
-      <el-dialog :visible.sync="dialogFormVisible" width="90%" :show-close=false>
-        <codeConnect
-          :currentRow="this.currentRowData"
-          :currentRowTenantId="this.currentRowTenantId"
-          :pageSize="this.pageSize"
-          :page="this.currentPage"
-          :currentAreaName="this.currentAreaName"
-          @closeDialogFormVisible="this.closeDialogFormVisible"
-          
-        />
-      </el-dialog>
     </div>
   </div>
 </template>
@@ -149,15 +213,27 @@
 <script>
 import editTenant from './editTenant.vue';
 import codeConnect from './codeConnect.vue';
-import { getAreaList, getTenantList, sendMail } from '../api/apis';
+import personalConfig from './personalConfig.vue';
+import {
+  getAreaList,
+  getTenantList,
+  sendMail,
+  getTenantPrivateConfig as getTenantPrivateConfigApi,
+  doSyncParty as doSyncPartyApi,
+  getInitPg,
+} from '../api/apis';
 export default {
   name: 'Contanier',
   components: {
     editTenant,
     codeConnect,
+    personalConfig,
   },
   data() {
     return {
+      activeName: 'basicInformation',
+      addTenantDialog: false,
+
       defaultExpandAll: true,
       loading: true,
       confirmLoading: false,
@@ -191,6 +267,11 @@ export default {
       tableData: [],
       enableEmail: true,
       dialogFormVisible: false,
+
+      personalConfigData: {},
+
+      currentTenantCode: '',
+      currentTenantName: '',
     };
   },
   methods: {
@@ -203,18 +284,33 @@ export default {
     changeConfirmTimeout() {
       clearTimeout(this.timer);
     },
+    changeSelectedTab(tab) {
+      this.activeName = tab;
+    },
     editTenantClick(type, data) {
       if (type === 'edit') {
+        this.currentTenantCode = data.tenantCode;
+        this.currentTenantName = data.tenantName;
+        console.log(this.currentRow)
         this.currentRowTenantId = data.tenantId;
         this.editType = 'edit';
+        this.editTenantDialog = true;
+        this.getTenantPrivateConfigMethod();
       } else {
         this.currentRowTenantId = 0;
         this.editType = 'add';
+        this.addTenantDialog = true;
       }
-      this.editTenantDialog = true;
     },
     codeConnectClick() {
       this.editDialog = true;
+    },
+    getTenantPrivateConfigMethod() {
+      getTenantPrivateConfigApi({ tenantId: this.currentRowTenantId }).then(res => {
+        if (res.data.isSuccess === 1) {
+          this.personalConfigData = { ...res.data.data };
+        }
+      });
     },
     // 改变每页显示的页数
     async handleSizeChange(val) {
@@ -323,6 +419,30 @@ export default {
     },
     searchBlur() {
       this.highlightCurrent = true;
+    },
+    // 同步用户
+    async syncParty(data) {
+      this.$confirm('同步服务商组织用户数据可能耗时几分钟到十几分钟不等，请耐心等待', '提示', {
+        title: '同步数据',
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      })
+        .then(() => {
+          const params = { partyId: data.partyId, tenantId: this.currentRowData.tenantId };
+          doSyncPartyApi(params);
+          getInitPg(params);
+          this.$message({
+            type: 'success',
+            message: '操作成功!',
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '操作取消',
+          });
+        });
     },
   },
   async created() {

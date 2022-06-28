@@ -1,11 +1,14 @@
 const packageName = require('./package.json').name;
 
 module.exports = {
-    devServer : {
-        port : 10000,
-        headers : {
-            'Access-Control-Allow-origin' : '*'
-        },
+    devServer: {
+        https: false,
+        proxy:{
+            '/' :{
+                target: 'https://manager-test.mypaas.com/',
+                changeOrigin: true,
+            }
+        }
     },
     // 自定义 webpack 配置
     configureWebpack: {

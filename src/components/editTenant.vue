@@ -1,8 +1,8 @@
 <template>
   <div class="container" demo-drawer__content>
-    <div class="header">
+    <div class="header" v-if="this.title">
       <div class="header-icon"></div>
-      <h3 class="header-title">开通/编辑租户</h3>
+      <h3 class="header-title">{{ this.title }}</h3>
     </div>
     <div class="forms">
       <el-form ref="form" :model="form" label-width="120px" label-position="left" :rules="rules" status-icon>
@@ -25,7 +25,8 @@
         <el-form-item label="企业名称" prop="tenantName">
           <el-input v-model="form.tenantName" placeholder="企业名称"></el-input>
         </el-form-item>
-        <el-form-item label="所属区域" prop="ownerArea">
+        <el-form-item label="所属区域" prop="ownerArea"
+          >
           <el-select v-model="form.ownerArea" placeholder="请选择所属区域" @change="selectAreaChange">
             <el-option
               v-for="item in ownerAreas"
@@ -81,18 +82,25 @@
         <el-button type="primary" class="btn" @click="saveChange(form)" :loading="this.confirmLoading">{{
           this.confirmLoading ? '提交中 ...' : '确 定'
         }}</el-button>
+        <el-button
+          class="btn"
+          type="success"
+          :disabled="Boolean(enableEmail)"
+          @click="sendMailCallback({ tenantId: currentTenantId })"
+          >重发激活邮件</el-button
+        >
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { searchTenant, searchPm, getDetail, getCustomer, saveTenantInfo } from '../api/apis';
+import { searchTenant, searchPm, getDetail, getCustomer, saveTenantInfo, sendMail, } from '../api/apis';
 // import {deepEqual} from '../tools/index';
 
 export default {
   name: 'editTenant',
-  props: ['confirmLoading', 'editDialog', 'currentRowTenantId', 'eltreeData', 'editType', 'changeTableData'],
+  props: ['confirmLoading', 'editDialog', 'currentRowTenantId', 'eltreeData', 'editType', 'changeTableData', 'title', 'enableEmail'],
   data() {
     const checkPhone = (rule, value, callback) => {
       if (!value) {
@@ -346,6 +354,17 @@ export default {
     datePickerChange(selectData) {
       this.form.expireAt = selectData;
     },
+    // 重发激活邮件
+    async sendMailCallback(tenantId) {
+      const res = await sendMail(tenantId);
+      if (res.data.code === 0) {
+        this.$notify({
+          title: '成功',
+          message: '激活邮件已发送成功！🤭',
+          type: 'success',
+        });
+      }
+    },
   },
 };
 </script>
@@ -380,7 +399,7 @@ export default {
 .el-form-item__content {
   width: 100%;
   padding-left: 80px;
-  color:red;
+  color: red;
 }
 
 .el-select,

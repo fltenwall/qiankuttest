@@ -99,39 +99,93 @@ const getCanUseChannel = (params = { tenantId: 0 }) => {
 
 // 新增、编辑服务商租户关联
 const addThirdParty = (
-    params = {
-        tenantId: '', //租户ID
-        channelId: 0, //服务商ID
-        channelName: '', //服务商名
-        channelCode: '', //租户code  用户填写的
-        partyId : '',
-    }
+  params = {
+    tenantId: '', //租户ID
+    channelId: 0, //服务商ID
+    channelName: '', //服务商名
+    channelCode: '', //租户code  用户填写的
+    partyId: '',
+  }
 ) => {
-    if (typeof params !== 'object') {
-        params = {};
-      }
-    return POST('backend/tenant/save-third-party', params);
-}
+  if (typeof params !== 'object') {
+    params = {};
+  }
+  return POST('backend/tenant/save-third-party', params);
+};
 
 // 同步数据
-const doSyncParty = (
-  params = {"partyId" : "", "tenantId":""}
-) => {
+const doSyncParty = (params = { partyId: '', tenantId: '' }) => {
   if (typeof params !== 'object') {
     params = {};
   }
   return POST('backend/tenant/do-sync-party', params);
-}
+};
 
 // 查询同步数据接口的执行状态
-const getInitPg = (
-  params = {"partyId" : "", "tenantId":""}
-) => {
+const getInitPg = (params = { partyId: '', tenantId: '' }) => {
   if (typeof params !== 'object') {
     params = {};
   }
   return POST('backend/tenant/get-init-pg', params);
-}
+};
+
+// 设置主通讯录
+const setAsMainParty = (
+  params = {
+    partyId: 0,
+    tenantId: 0,
+  }
+) => {
+  return POST('backend/tenant/set-as-main-party', params);
+};
+
+// 获取租户代码映射列表
+const getTenantChannelMap = (
+  data = {
+    tenantId: '',
+  }
+) => {
+  return POST('backend/tenant/get-tenant-channel-map', data);
+};
+
+// 删除租户代码映射
+const delThirdParty = (
+  data = {
+    tenantId: '',
+    partyId: '',
+  }
+) => {
+  return POST('backend/tenant/del-third-party', data);
+};
+
+// 获取租户私有化配置
+const getTenantPrivateConfig = (
+  data = {
+    tenantId: '',
+  }
+) => {
+  return POST('backend/tenant/get-tenant-private-config', data);
+};
+
+// 保存租户私有化配置
+const saveTenantPrivateConfig = (
+  data = {
+    tenantId: '', //租户ID
+    channelType: 2, //企业通讯录类型 1服务商  2基础数据
+    basicData: {
+      //类型为基础数据时有此字段
+      apiHost: '', //api域名
+      apiKey: '', //应用id
+      appSecret: '', //应用秘钥
+    },
+    thirdPartyData: {
+      //服务商有此字段
+      channelId: '',
+    },
+  }
+) => {
+  return POST('backend/tenant/save-tenant-private-config', data);
+};
 
 export {
   getAreaList,
@@ -149,4 +203,9 @@ export {
   addThirdParty,
   doSyncParty,
   getInitPg,
+  setAsMainParty,
+  getTenantChannelMap,
+  delThirdParty,
+  getTenantPrivateConfig,
+  saveTenantPrivateConfig,
 };
